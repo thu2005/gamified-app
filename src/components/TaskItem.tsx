@@ -8,13 +8,20 @@ interface TaskItemProps {
 }
 
 export const TaskItem = ({ task, onToggle, onEdit, onDelete }: TaskItemProps) => {
-  const formatDate = (dateString?: string) => {
+  const formatDateTime = (dateString?: string) => {
     if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('en-US', {
+    const date = new Date(dateString);
+    const dateStr = date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric'
     });
+    const timeStr = date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+    return `${dateStr} at ${timeStr}`;
   };
 
   const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
@@ -63,7 +70,7 @@ export const TaskItem = ({ task, onToggle, onEdit, onDelete }: TaskItemProps) =>
             
             {task.dueDate && (
               <span className={`task-due-date ${isOverdue ? 'overdue' : ''}`}>
-                Due: {formatDate(task.dueDate)}
+                Due: {formatDateTime(task.dueDate)}
               </span>
             )}
           </div>

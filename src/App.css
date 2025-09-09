@@ -12,6 +12,25 @@ body {
   line-height: 1.6;
 }
 
+/* Force English locale for date/time inputs */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  -webkit-locale: "en-US";
+  color-scheme: light;
+}
+
+/* Additional attempt to force English locale */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  color-scheme: light;
+}
+
+/* Force English format display */
+:root {
+  --locale: "en-US";
+}
+
 /* App Container */
 .app {
   max-width: 800px;
@@ -89,9 +108,17 @@ body {
   gap: 4px;
 }
 
+.form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2c3e50;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 12px;
 }
 
@@ -110,6 +137,13 @@ body {
 .task-form select:focus {
   outline: none;
   border-color: #3498db;
+}
+
+.task-form input:disabled {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+  border-color: #e1e8ed;
 }
 
 .form-actions {
@@ -400,5 +434,11 @@ body {
   .task-meta {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  .form-row {
+    grid-template-columns: 1fr 1fr;
   }
 }

@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import type { Task } from './types/Task'
 import { useTasks } from './hooks/useTasks'
 import { TaskForm } from './components/TaskForm'
 import { TaskItem } from './components/TaskItem'
 import { TaskFilters } from './components/TaskFilters'
+import { forceEnglishLocale } from './utils/localeUtils'
 
 function App() {
   const { 
@@ -22,6 +23,11 @@ function App() {
 
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [showForm, setShowForm] = useState(false)
+
+  // Force English locale on app initialization
+  useEffect(() => {
+    forceEnglishLocale()
+  }, [])
 
   const handleAddTask = (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
     addTask(taskData)
