@@ -8,6 +8,7 @@ import TaskDetails from './pages/task-details';
 import AllTasks from './pages/all-tasks';
 import DashboardOverview from './pages/dashboard-overview';
 import TaskTester from './components/TaskTester';
+import TreeProgressTest from './pages/TreeProgressTest';
 
 const Routes = () => {
   return (
@@ -22,6 +23,7 @@ const Routes = () => {
         <Route path="/task-details" element={<TaskDetails />} />
         <Route path="/all-tasks" element={<AllTasks />} />
         <Route path="/test-tasks" element={<TaskTester />} />
+        <Route path="/test-tree" element={<TreeProgressTest />} />
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
       </ErrorBoundary>
