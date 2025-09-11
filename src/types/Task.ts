@@ -1,3 +1,9 @@
+export interface Subtask {
+    id: string;
+    title: string;
+    completed: boolean;
+}
+
 export interface Task {
     id: string;
     title: string;
@@ -8,6 +14,7 @@ export interface Task {
     dueDate?: string;
     createdAt: string;
     updatedAt: string;
+    subtasks?: Subtask[];
 }
 
 export type TaskFilter = 'all' | 'pending' | 'completed';
