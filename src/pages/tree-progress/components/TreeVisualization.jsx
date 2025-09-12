@@ -1,24 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 
-const TreeVisualization = ({ treeHealth, waterDrops, isWatering, showGrowthAnimation }) => {
+const TreeVisualization = ({ treeHealth, waterDrops, treeStage, isWatering, showGrowthAnimation, isDead, revivalTasksCount }) => {
   const [animationClass, setAnimationClass] = useState('');
+
+  console.log('TreeVisualization props:', { treeHealth, waterDrops, treeStage, isWatering, showGrowthAnimation });
 
   useEffect(() => {
     if (showGrowthAnimation) {
-      setAnimationClass('tree-animation');
-      const timer = setTimeout(() => setAnimationClass(''), 1000);
-      return () => clearTimeout(timer);
+      setAnimationClass('scale-105 transition-transform duration-1000');
+      setTimeout(() => setAnimationClass(''), 1000);
     }
   }, [showGrowthAnimation]);
 
   const getTreeStage = () => {
-    if (treeHealth >= 90) return { icon: 'TreePine', size: 120, color: '#10B981', stage: 'Flourishing' };
-    if (treeHealth >= 75) return { icon: 'TreePine', size: 100, color: '#059669', stage: 'Mature' };
-    if (treeHealth >= 60) return { icon: 'Trees', size: 80, color: '#67C090', stage: 'Growing' };
-    if (treeHealth >= 40) return { icon: 'Leaf', size: 60, color: '#F59E0B', stage: 'Young' };
-    if (treeHealth >= 20) return { icon: 'Sprout', size: 40, color: '#EF4444', stage: 'Struggling' };
-    return { icon: 'Sprout', size: 30, color: '#991B1B', stage: 'Dying' };
+    // If tree is dead, show dead state
+    if (isDead) {
+      return { 
+        icon: 'Skull', 
+        size: 40, 
+        color: '#7F1D1D', 
+        stage: `Dead (${revivalTasksCount || 0}/10 tasks to revive)` 
+      };
+    }
+    
+    // Use treeStage from hook with proper icons and colors matching the new stage config
+    const stageConfig = {
+      'Seed': { icon: 'Sprout', size: 30, color: '#8B5A00' },
+      'Sprout': { icon: 'Leaf', size: 50, color: '#65A30D' },
+      'Sapling': { icon: 'Trees', size: 70, color: '#16A34A' },
+      'Young Tree': { icon: 'TreeDeciduous', size: 90, color: '#059669' },
+      'Ancient Tree': { icon: 'TreePine', size: 120, color: '#047857' }
+    };
+    
+    const config = stageConfig[treeStage] || stageConfig['Seed'];
+    return { ...config, stage: treeStage };
   };
 
   const tree = getTreeStage();
@@ -75,26 +91,39 @@ const TreeVisualization = ({ treeHealth, waterDrops, isWatering, showGrowthAnima
 
         {/* Tree Stage Label */}
         <div className="mt-4 text-center">
-          <h3 className="text-xl font-semibold text-foreground">{tree?.stage} Tree</h3>
-          <p className="text-sm text-muted-foreground mt-1">Health: {treeHealth}%</p>
+          <h3 className="text-xl font-semibold text-foreground">{tree?.stage}</h3>
+          {!isDead && <p className="text-sm text-muted-foreground mt-1">Health: {treeHealth}</p>}
+          {isDead && (
+            <div className="mt-2">
+              <p className="text-sm text-red-600 font-medium">Complete {10 - (revivalTasksCount || 0)} more tasks to revive</p>
+              <div className="w-32 bg-red-100 rounded-full h-2 mt-2 mx-auto">
+                <div 
+                  className="h-full bg-red-500 rounded-full transition-all duration-300"
+                  style={{ width: `${((revivalTasksCount || 0) / 10) * 100}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Health Bar */}
-        <div className="w-32 bg-border rounded-full h-3 mt-3 overflow-hidden">
-          <div 
-            className="h-full rounded-full progress-transition"
-            style={{ 
-              width: `${treeHealth}%`,
-              backgroundColor: tree?.color
-            }}
-          />
-        </div>
+        {/* Health Bar - only show if not dead */}
+        {!isDead && (
+          <div className="w-32 bg-border rounded-full h-3 mt-3 overflow-hidden">
+            <div 
+              className="h-full rounded-full progress-transition"
+              style={{ 
+                width: `${treeHealth}%`,
+                backgroundColor: tree?.color
+              }}
+            />
+          </div>
+        )}
 
         {/* Water Drops Counter */}
         <div className="flex items-center space-x-2 mt-4 bg-background rounded-lg px-4 py-2">
           <Icon name="Droplets" size={16} color="var(--color-primary)" />
           <span className="text-sm font-medium text-foreground">
-            {waterDrops}/10 drops
+            {isDead ? `Revival: ${revivalTasksCount || 0}/10` : `${waterDrops}/10 drops`}
           </span>
         </div>
       </div>

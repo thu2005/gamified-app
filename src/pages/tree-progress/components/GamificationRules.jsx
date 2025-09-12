@@ -8,37 +8,37 @@ const GamificationRules = () => {
     {
       icon: 'CheckCircle',
       title: 'Complete Tasks',
-      description: 'Each completed task earns you 1 water drop',
+      description: 'Finish 1 task (or 2 subtasks) to earn 1 water drop',
       color: 'var(--color-success)'
     },
     {
       icon: 'Droplets',
       title: 'Water Your Tree',
-      description: 'Collect 10 water drops to water your tree and help it grow',
+      description: 'Save up 10 drops to water your tree and watch it grow',
       color: 'var(--color-primary)'
     },
     {
       icon: 'TrendingUp',
       title: 'Tree Growth',
-      description: 'Regular watering increases tree health and unlocks new stages',
+      description: 'Each watering adds 10 health and unlocks new stages for your tree',
       color: 'var(--color-success)'
     },
     {
       icon: 'Flame',
       title: 'Maintain Streaks',
-      description: 'Complete tasks daily to maintain your streak and boost growth',
+      description: 'Complete tasks every day to keep your streak. With streaks, every watering gets a bonus: + (streak × 10%) health',
       color: 'var(--color-warning)'
     },
     {
       icon: 'AlertTriangle',
       title: 'Avoid Missed Deadlines',
-      description: 'Missing deadlines reduces tree health and breaks streaks',
+      description: 'Missing a deadline reduces 20 health and breaks your streak, even if you finished other tasks',
       color: 'var(--color-error)'
     },
     {
       icon: 'Skull',
       title: 'Tree Revival',
-      description: '5 missed deadlines kills your tree. Complete 10 tasks to revive it',
+      description: '5 missed deadlines within 5 days will kill your tree (regardless of how many other tasks you complete). Revive it by completing 10 new tasks (starts again at 0 health)',
       color: 'var(--color-destructive)'
     }
   ];

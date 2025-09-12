@@ -4,9 +4,9 @@ const useTreeProgress = () => {
   // Tree stages configuration
   const STAGES = [
     { name: 'Seed', icon: 'Sprout', minHealth: 0, maxHealth: 99 },
-    { name: 'Sprout', icon: 'Leaf', minHealth: 100, maxHealth: 149 },
-    { name: 'Sapling', icon: 'Trees', minHealth: 150, maxHealth: 249 },
-    { name: 'Young Tree', icon: 'TreeDeciduous', minHealth: 250, maxHealth: 399 },
+    { name: 'Sprout', icon: 'Leaf', minHealth: 100, maxHealth: 199 },
+    { name: 'Sapling', icon: 'Trees', minHealth: 200, maxHealth: 299 },
+    { name: 'Young Tree', icon: 'TreeDeciduous', minHealth: 300, maxHealth: 399 },
     { name: 'Ancient Tree', icon: 'TreePine', minHealth: 400, maxHealth: Infinity }
   ];
 
@@ -23,7 +23,7 @@ const useTreeProgress = () => {
   // Core state
   const [absoluteHealth, setAbsoluteHealth] = useState(() => {
     const saved = localStorage.getItem('treeProgress_absoluteHealth');
-    return saved ? parseInt(saved) : 0;
+    return saved ? parseFloat(saved) : 0;
   });
 
   const [waterDrops, setWaterDrops] = useState(() => {
@@ -41,8 +41,23 @@ const useTreeProgress = () => {
     return saved ? parseInt(saved) : 0;
   });
 
+  const [bestStreak, setBestStreak] = useState(() => {
+    const saved = localStorage.getItem('treeProgress_bestStreak');
+    return saved ? parseInt(saved) : 0;
+  });
+
+  const [daysActive, setDaysActive] = useState(() => {
+    const saved = localStorage.getItem('treeProgress_daysActive');
+    return saved ? parseInt(saved) : 0;
+  });
+
   const [lastActiveDate, setLastActiveDate] = useState(() => {
     const saved = localStorage.getItem('treeProgress_lastActiveDate');
+    return saved ? new Date(saved) : new Date();
+  });
+
+  const [firstActiveDate, setFirstActiveDate] = useState(() => {
+    const saved = localStorage.getItem('treeProgress_firstActiveDate');
     return saved ? new Date(saved) : new Date();
   });
 
@@ -79,8 +94,20 @@ const useTreeProgress = () => {
   }, [streak]);
 
   useEffect(() => {
+    localStorage.setItem('treeProgress_bestStreak', bestStreak.toString());
+  }, [bestStreak]);
+
+  useEffect(() => {
+    localStorage.setItem('treeProgress_daysActive', daysActive.toString());
+  }, [daysActive]);
+
+  useEffect(() => {
     localStorage.setItem('treeProgress_lastActiveDate', lastActiveDate.toISOString());
   }, [lastActiveDate]);
+
+  useEffect(() => {
+    localStorage.setItem('treeProgress_firstActiveDate', firstActiveDate.toISOString());
+  }, [firstActiveDate]);
 
   useEffect(() => {
     localStorage.setItem('treeProgress_missedDeadlines', JSON.stringify(missedDeadlines));
@@ -106,91 +133,139 @@ const useTreeProgress = () => {
       };
     }
 
-    let stageIndex = 0;
-    let healthInStage = absoluteHealth;
-
+    // Simple logic: find which stage the absoluteHealth falls into
     for (let i = 0; i < STAGES.length; i++) {
       const stage = STAGES[i];
-      const stageSize = stage.maxHealth === Infinity ? Infinity : (stage.maxHealth - stage.minHealth + 1);
       
-      if (stage.maxHealth === Infinity) {
-        // Ancient Tree stage - cap health
-        const cappedHealth = Math.min(healthInStage, 400);
+      if (absoluteHealth >= stage.minHealth && 
+          (stage.maxHealth === Infinity || absoluteHealth <= stage.maxHealth)) {
+        
+        // For Ancient Tree stage (400+), cap the display health at a reasonable number
+        const displayHealth = stage.maxHealth === Infinity ? 
+          Math.min(absoluteHealth, 999) : absoluteHealth;
+        const maxDisplay = stage.maxHealth === Infinity ? 999 : stage.maxHealth;
+        
         return {
           stageIndex: i,
           stageName: stage.name,
           icon: stage.icon,
-          healthInStage: cappedHealth,
-          maxHealthInStage: 400
+          healthInStage: displayHealth,
+          maxHealthInStage: maxDisplay
         };
       }
-      
-      if (healthInStage < stageSize) {
-        return {
-          stageIndex: i,
-          stageName: stage.name,
-          icon: stage.icon,
-          healthInStage: healthInStage,
-          maxHealthInStage: stage.maxHealth - stage.minHealth
-        };
-      }
-      
-      healthInStage -= stageSize;
-      stageIndex = i + 1;
     }
 
-    // Fallback to Ancient Tree
+    // Fallback to Ancient Tree if somehow not found
     return {
       stageIndex: STAGES.length - 1,
       stageName: 'Ancient Tree',
       icon: 'TreePine',
-      healthInStage: 400,
-      maxHealthInStage: 400
+      healthInStage: Math.min(absoluteHealth, 999),
+      maxHealthInStage: 999
     };
   }, [absoluteHealth, isDead]);
 
   // Update streak based on daily activity
   const updateStreak = useCallback(() => {
+    console.log('🌳 TREE: updateStreak called');
+    const today = new Date();
+    const lastActive = new Date(lastActiveDate);
+    
+    // Reset time to start of day for accurate day comparison
+    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const lastActiveDate_startOfDay = new Date(lastActive.getFullYear(), lastActive.getMonth(), lastActive.getDate());
+    
+    const daysDiff = Math.floor((todayDate - lastActiveDate_startOfDay) / (1000 * 60 * 60 * 24));
+    console.log('🌳 TREE: Date comparison', { 
+      today: today.toISOString(), 
+      lastActive: lastActive.toISOString(),
+      todayDate: todayDate.toISOString(),
+      lastActiveDate_startOfDay: lastActiveDate_startOfDay.toISOString(),
+      daysDiff 
+    });
+    
+    if (daysDiff === 0) {
+      // Same day - no change
+      console.log('🌳 TREE: Same day, no streak/daysActive change');
+      return;
+    }
+    
+    console.log('🌳 TREE: New day detected, updating daysActive and streak');
+    
+    // This is a new active day, increment daysActive
+    setDaysActive(prev => {
+      console.log('🌳 TREE: daysActive', prev, '→', prev + 1);
+      return prev + 1;
+    });
+    
+    if (daysDiff === 1) {
+      // Consecutive day - increment streak
+      console.log('🌳 TREE: Consecutive day, incrementing streak');
+      setStreak(prev => {
+        const newStreak = prev + 1;
+        console.log('🌳 TREE: streak', prev, '→', newStreak);
+        // Update best streak if current streak is higher
+        setBestStreak(currentBest => {
+          const newBest = Math.max(currentBest, newStreak);
+          console.log('🌳 TREE: bestStreak', currentBest, '→', newBest);
+          return newBest;
+        });
+        return newStreak;
+      });
+    } else {
+      // Streak broken - reset to 1 (but still count this as an active day)
+      console.log('🌳 TREE: Streak broken, resetting to 1');
+      setStreak(1);
+      console.log('🌳 TREE: streak reset to 1');
+      // Still update best streak in case this was the first time
+      setBestStreak(currentBest => {
+        const newBest = Math.max(currentBest, 1);
+        console.log('🌳 TREE: bestStreak', currentBest, '→', newBest);
+        return newBest;
+      });
+    }
+    
+    setLastActiveDate(today);
+    console.log('🌳 TREE: lastActiveDate updated to', today.toISOString());
+  }, [lastActiveDate]);
+
+  // Track daily activity (Option 2: Moderate)
+  const trackDailyActivity = useCallback(() => {
     const today = new Date();
     const lastActive = new Date(lastActiveDate);
     
     const daysDiff = Math.floor((today - lastActive) / (1000 * 60 * 60 * 24));
     
     if (daysDiff === 0) {
-      // Same day - no change
+      // Same day - no change to daysActive, but update lastActiveDate for completeness
       return;
-    } else if (daysDiff === 1) {
-      // Consecutive day - increment streak
-      setStreak(prev => prev + 1);
-    } else {
-      // Streak broken
-      setStreak(1);
     }
     
+    // This is a new active day, increment daysActive
+    setDaysActive(prev => prev + 1);
     setLastActiveDate(today);
   }, [lastActiveDate]);
 
-  // Clean old missed deadlines (only keep last 5 days)
-  const cleanOldMissedDeadlines = useCallback(() => {
+  // Check if tree should die
+  const checkTreeDeath = useCallback(() => {
+    // Clean old missed deadlines first
     const fiveDaysAgo = new Date();
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - DEATH_THRESHOLD_DAYS);
     
-    setMissedDeadlines(prev => 
-      prev.filter(deadline => new Date(deadline.date) > fiveDaysAgo)
-    );
-  }, []);
-
-  // Check if tree should die
-  const checkTreeDeath = useCallback(() => {
-    cleanOldMissedDeadlines();
-    
-    const recentMisses = missedDeadlines.length;
-    if (recentMisses >= DEATH_THRESHOLD_MISSES && !isDead) {
-      setIsDead(true);
-      setAbsoluteHealth(0);
-      setRevivalTasksCount(0);
-    }
-  }, [missedDeadlines, isDead, cleanOldMissedDeadlines]);
+    setMissedDeadlines(prev => {
+      const cleaned = prev.filter(deadline => new Date(deadline.date) > fiveDaysAgo);
+      
+      // Check death condition with cleaned data
+      const recentMisses = cleaned.length;
+      if (recentMisses >= DEATH_THRESHOLD_MISSES && !isDead) {
+        setIsDead(true);
+        setAbsoluteHealth(0);
+        setRevivalTasksCount(0);
+      }
+      
+      return cleaned;
+    });
+  }, [isDead]);
 
   // Add water drops with simple decimal logic
   const addWaterDrops = useCallback((taskId, subtaskCount = 0, isDirectTaskCompletion = false) => {
@@ -266,13 +341,16 @@ const useTreeProgress = () => {
     }
 
     if (dropsToRemove > 0) {
-      setWaterDrops(prev => Math.max(0, prev - dropsToRemove));
+      setWaterDrops(prev => prev - dropsToRemove);
     }
   }, [isDead, subtaskProgress]);
 
   // Public API functions
   const completeTask = useCallback((taskId, hasSubtasks = false, subtaskCount = 0) => {
+    console.log('🌳 TREE: completeTask called', { taskId, hasSubtasks, subtaskCount, isDead, revivalTasksCount });
+    
     if (isDead && revivalTasksCount < REVIVAL_TASKS_REQUIRED) {
+      console.log('🌳 TREE: Tree is dead, counting revival task');
       const newCount = revivalTasksCount + 1;
       setRevivalTasksCount(newCount);
       
@@ -283,32 +361,51 @@ const useTreeProgress = () => {
         setRevivalTasksCount(0);
         setMissedDeadlines([]);
         setStreak(1);
+        setBestStreak(currentBest => Math.max(currentBest, 1));
         setLastActiveDate(new Date());
       }
       return;
     }
 
+    console.log('🌳 TREE: Tree alive, calling updateStreak and addWaterDrops');
     updateStreak();
     addWaterDrops(taskId, subtaskCount, hasSubtasks);
   }, [isDead, revivalTasksCount, updateStreak, addWaterDrops]);
 
   const uncompleteTask = useCallback((taskId, hasSubtasks = false, subtaskCount = 0) => {
-    if (isDead) return;
+    console.log('🌳 TREE: uncompleteTask called', { taskId, hasSubtasks, subtaskCount, isDead, revivalTasksCount });
+    
+    if (isDead) {
+      // If tree is dead, reduce revival task count when uncompleting
+      if (revivalTasksCount > 0) {
+        setRevivalTasksCount(prev => Math.max(0, prev - 1));
+      }
+      return;
+    }
     
     removeWaterDrops(taskId, subtaskCount, hasSubtasks);
-  }, [isDead, removeWaterDrops]);
+  }, [isDead, revivalTasksCount, removeWaterDrops]);
 
   const completeSubtask = useCallback((taskId, subtaskId) => {
+    console.log('🌳 TREE: completeSubtask called', { taskId, subtaskId, isDead });
+    
     if (isDead) return;
     
+    // Track activity for completing subtask
+    trackDailyActivity();
     addWaterDrops(taskId, 1, false);
-  }, [isDead, addWaterDrops]);
+  }, [isDead, trackDailyActivity, addWaterDrops]);
 
   const uncompleteSubtask = useCallback((taskId, subtaskId) => {
-    if (isDead) return;
+    console.log('🌳 TREE: uncompleteSubtask called', { taskId, subtaskId, isDead, revivalTasksCount });
+    
+    if (isDead) {
+      // Subtasks don't contribute to revival, so nothing to undo
+      return;
+    }
     
     removeWaterDrops(taskId, 1, false);
-  }, [isDead, removeWaterDrops]);
+  }, [isDead, revivalTasksCount, removeWaterDrops]);
 
   const waterTree = useCallback(() => {
     if (waterDrops < DROPS_PER_WATERING || isDead) return false;
@@ -342,6 +439,7 @@ const useTreeProgress = () => {
     setRevivalTasksCount(0);
     setMissedDeadlines([]);
     setStreak(1);
+    setBestStreak(currentBest => Math.max(currentBest, 1));
     setLastActiveDate(new Date());
 
     return true;
@@ -356,6 +454,14 @@ const useTreeProgress = () => {
     };
   }, [getCurrentStageInfo]);
 
+  // Public function to track productivity activity (Option 2: Moderate)
+  const trackActivity = useCallback((activityType = 'general') => {
+    console.log('🌳 TREE: trackActivity called', { activityType, isDead });
+    
+    // Always track activity even if tree is dead (for daysActive count)
+    trackDailyActivity();
+  }, [trackDailyActivity]);
+
   // Auto-trigger watering when enough drops
   useEffect(() => {
     if (waterDrops >= DROPS_PER_WATERING && !isDead) {
@@ -366,11 +472,10 @@ const useTreeProgress = () => {
     }
   }, [waterDrops, isDead, waterTree]);
 
-  // Clean old missed deadlines on mount and periodically
+  // Clean old missed deadlines on mount only
   useEffect(() => {
-    cleanOldMissedDeadlines();
     checkTreeDeath();
-  }, [cleanOldMissedDeadlines, checkTreeDeath]);
+  }, []); // Empty dependency array - only run on mount
 
   const currentStage = getCurrentStageInfo();
 
@@ -380,6 +485,8 @@ const useTreeProgress = () => {
     treeHealth: currentStage.healthInStage,
     waterDrops,
     streak,
+    bestStreak,
+    daysActive,
     missedDeadlines: missedDeadlines.length,
     isDead,
     revivalTasksCount,
@@ -393,6 +500,7 @@ const useTreeProgress = () => {
     missDeadline,
     reviveTree,
     getStageInfo,
+    trackActivity,
     
     // Utilities
     canWater: waterDrops >= DROPS_PER_WATERING && !isDead,

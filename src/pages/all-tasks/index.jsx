@@ -9,6 +9,7 @@ import AddTaskModal from '../../components/AddTaskModal';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
 import { useTasks } from '../../hooks/useTasks';
+import useTreeProgress from '../../hooks/useTreeProgress';
 
 const AllTasks = () => {
   const navigate = useNavigate();
@@ -33,6 +34,77 @@ const AllTasks = () => {
     toggleSubtaskCompletion,
     getTasksStats
   } = useTasks();
+
+  // Use the useTreeProgress hook for gamification
+  const {
+    completeTask: treeCompleteTask,
+    uncompleteTask: treeUncompleteTask,
+    completeSubtask: treeCompleteSubtask,
+    uncompleteSubtask: treeUncompleteSubtask,
+    missDeadline: treeMissDeadline
+  } = useTreeProgress();
+
+  // Enhanced task completion handler that also updates tree progress
+  const handleTaskToggle = (taskId) => {
+    const task = allTasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    console.log('Task toggle:', { taskId, task, completed: task.completed });
+
+    // Determine new completion state (opposite of current)
+    const newCompleted = !task.completed;
+
+    // Update task completion status first
+    toggleTaskCompletion(taskId);
+
+    // Update tree progress based on new state
+    if (newCompleted) {
+      // Task is being completed
+      console.log('🎯 ALL-TASKS: Completing task for tree progress', { 
+        taskId, 
+        hasSubtasks: task.subtasks?.length > 0, 
+        subtaskCount: task.subtasks?.length || 0 
+      });
+      treeCompleteTask(taskId, task.subtasks?.length > 0, task.subtasks?.length || 0);
+    } else {
+      // Task is being uncompleted
+      console.log('🎯 ALL-TASKS: Uncompleting task for tree progress', {
+        taskId, 
+        hasSubtasks: task.subtasks?.length > 0, 
+        subtaskCount: task.subtasks?.length || 0 
+      });
+      treeUncompleteTask(taskId, task.subtasks?.length > 0, task.subtasks?.length || 0);
+    }
+  };
+
+  // Check for overdue tasks and handle missed deadlines
+  useEffect(() => {
+    const now = new Date();
+    const overdueTaskIds = [];
+    
+    allTasks.forEach(task => {
+      if (!task.completed && task.dueDate) {
+        const dueDate = new Date(task.dueDate);
+        if (dueDate < now) {
+          // Only add if we haven't already processed this overdue task
+          const taskKey = `missed_${task.id}`;
+          const alreadyProcessed = localStorage.getItem(taskKey);
+          if (!alreadyProcessed) {
+            overdueTaskIds.push(task.id);
+            localStorage.setItem(taskKey, 'true');
+          }
+        }
+      }
+    });
+
+    // Only process if there are new overdue tasks
+    if (overdueTaskIds.length > 0) {
+      console.log('Processing overdue tasks:', overdueTaskIds);
+      overdueTaskIds.forEach(taskId => {
+        treeMissDeadline(taskId);
+      });
+    }
+  }, [allTasks]);
 
   // Filter and sort tasks
   const filteredTasks = useMemo(() => {
@@ -153,7 +225,7 @@ const AllTasks = () => {
   };
 
   const handleTaskStatusChange = (taskId, completed) => {
-    toggleTaskCompletion(taskId);
+    handleTaskToggle(taskId);
     
     // Trigger tree growth animation if task completed
     if (completed) {
@@ -180,7 +252,28 @@ const AllTasks = () => {
   };
 
   const handleSubtaskToggle = (taskId, subtaskId) => {
+    const task = allTasks.find(t => t.id === taskId);
+    const subtask = task?.subtasks?.find(s => s.id === subtaskId);
+    if (!task || !subtask) return;
+
+    console.log('Subtask toggle:', { taskId, subtaskId, subtask, completed: subtask.completed });
+
+    // Determine new completion state (opposite of current)
+    const newCompleted = !subtask.completed;
+
+    // Update subtask completion status first
     toggleSubtaskCompletion(taskId, subtaskId);
+
+    // Update tree progress based on new state
+    if (newCompleted) {
+      // Subtask is being completed
+      console.log('Completing subtask for tree progress', { taskId, subtaskId });
+      treeCompleteSubtask(taskId, subtaskId);
+    } else {
+      // Subtask is being uncompleted
+      console.log('Uncompleting subtask for tree progress', { taskId, subtaskId });
+      treeUncompleteSubtask(taskId, subtaskId);
+    }
   };
 
   const hasFilters = filters?.category || filters?.priority || filters?.dueDate || searchTerm;

@@ -1,37 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
+import useTreeProgress from '../../../hooks/useTreeProgress';
+import { useTasks } from '../../../hooks/useTasks';
 
 const MiniWidgets = () => {
   const navigate = useNavigate();
   
-  const [treeHealth, setTreeHealth] = useState(85);
-  const [highestPriorityTask, setHighestPriorityTask] = useState({
-    id: 1,
-    title: "Complete React Assignment",
-    priority: "High",
-    dueTime: "23:59",
-    progress: 50
-  });
+  // Get real tree progress data
+  const {
+    treeHealth,
+    treeStage,
+    waterDrops,
+    isDead
+  } = useTreeProgress();
 
-  // Simulate tree health changes
-  useEffect(() => {
-    const handleTaskComplete = () => {
-      setTreeHealth(prev => Math.min(100, prev + 2));
-    };
+  // Get tasks data for Focus Today widget
+  const { tasks } = useTasks();
+  
+  // Get highest priority incomplete task for Focus Today
+  const getHighestPriorityTask = () => {
+    const incompleteTasks = tasks.filter(task => !task.completed);
+    if (incompleteTasks.length === 0) return null;
+    
+    const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+    return incompleteTasks.sort((a, b) => {
+      const priorityDiff = (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
+      if (priorityDiff !== 0) return priorityDiff;
+      
+      // If same priority, sort by due date
+      if (a.dueDate && b.dueDate) {
+        return new Date(a.dueDate) - new Date(b.dueDate);
+      }
+      return 0;
+    })[0];
+  };
 
-    window.addEventListener('taskCompleted', handleTaskComplete);
-    return () => window.removeEventListener('taskCompleted', handleTaskComplete);
-  }, []);
+  const highestPriorityTask = getHighestPriorityTask();
 
-  const getTreeIcon = (health) => {
-    if (health >= 80) return 'TreePine';
-    if (health >= 60) return 'Trees';
-    if (health >= 40) return 'Leaf';
-    return 'Sprout';
+  // Get tree icon based on stage from useTreeProgress
+  const getTreeIcon = () => {
+    if (isDead) return 'Skull';
+    if (treeStage === 'Seed') return 'Dot'; // Small seed icon
+    if (treeStage === 'Sprout') return 'Sprout'; // Just sprouting
+    if (treeStage === 'Sapling') return 'Leaf'; // Young with leaves
+    if (treeStage === 'Young Tree') return 'Trees'; // Multiple branches
+    if (treeStage === 'Ancient Tree') return 'TreePine'; // Full grown tree
+    return 'Dot';
   };
 
   const getTreeColor = (health) => {
+    if (isDead) return 'text-destructive';
     if (health >= 80) return 'text-success';
     if (health >= 60) return 'text-primary';
     if (health >= 40) return 'text-warning';
@@ -39,7 +58,8 @@ const MiniWidgets = () => {
   };
 
   const getHealthMessage = (health) => {
-    if (health >= 90) return 'Thriving';
+    if (isDead) return 'Dead';
+    if (health >= 90) return treeStage;
     if (health >= 80) return 'Healthy';
     if (health >= 60) return 'Growing';
     if (health >= 40) return 'Developing';
@@ -51,7 +71,9 @@ const MiniWidgets = () => {
   };
 
   const handleTaskClick = () => {
-    navigate(`/task-details?id=${highestPriorityTask?.id}`);
+    if (highestPriorityTask) {
+      navigate(`/task-details?id=${highestPriorityTask.id}`);
+    }
   };
 
   const getPriorityColor = (priority) => {
@@ -82,7 +104,7 @@ const MiniWidgets = () => {
         <div className="flex items-center space-x-4">
           <div className="flex-shrink-0">
             <Icon
-              name={getTreeIcon(treeHealth)}
+              name={getTreeIcon()}
               size={32}
               className={getTreeColor(treeHealth)}
             />
@@ -91,8 +113,11 @@ const MiniWidgets = () => {
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
               <span className={`text-xl font-bold ${getTreeColor(treeHealth)}`}>
-                {treeHealth}%
+                {isDead ? '💀' : Math.round(treeHealth)}
               </span>
+            </div>
+            
+            <div className="mb-2">
               <span className={`text-xs px-2 py-1 rounded-full ${getTreeColor(treeHealth)?.replace('text-', 'bg-')?.replace('text-', 'text-')} bg-opacity-10`}>
                 {getHealthMessage(treeHealth)}
               </span>
@@ -102,7 +127,7 @@ const MiniWidgets = () => {
             <div className="w-full bg-muted/30 rounded-full h-2">
               <div 
                 className={`h-2 rounded-full transition-all duration-300 ${getTreeColor(treeHealth)?.replace('text-', 'bg-')}`}
-                style={{ width: `${treeHealth}%` }}
+                style={{ width: `${isDead ? 0 : Math.min(100, (treeHealth / 100) * 100)}%` }}
               />
             </div>
           </div>

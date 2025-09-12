@@ -67,7 +67,7 @@ const TreeVisualization = ({ treeHealth, waterDrops, streak }) => {
       {/* Tree info */}
       <div>
         <h3 className="text-lg font-semibold text-foreground mb-1">{tree?.stage}</h3>
-        <p className="text-sm text-muted-foreground">Health: {treeHealth}%</p>
+        <p className="text-sm text-muted-foreground">Health: {treeHealth}</p>
       </div>
       {/* Health bar */}
       <div className="space-y-2">

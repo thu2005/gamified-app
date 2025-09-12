@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import useTreeProgress from './useTreeProgress';
 
 const LOCAL_STORAGE_KEY = 'treetask_tasks';
 
@@ -44,6 +45,7 @@ const normalizeTaskData = (taskData) => {
 
 export const useTasks = () => {
   const [tasks, setTasks] = useState([]);
+  const { trackActivity } = useTreeProgress();
 
   // Load tasks from localStorage on mount
   useEffect(() => {
@@ -83,12 +85,18 @@ export const useTasks = () => {
 
     const newTask = normalizeTaskData(taskData);
     
+    // Track activity for adding task (Option 2: Moderate)
+    trackActivity('add_task');
+    
     setTasks(prevTasks => [...prevTasks, newTask]);
     return newTask;
-  }, []);
+  }, [trackActivity]);
 
   // Update existing task
   const updateTask = useCallback((id, updates) => {
+    // Track activity for editing task (Option 2: Moderate)
+    trackActivity('edit_task');
+    
     setTasks(prevTasks => {
       const updatedTasks = prevTasks.map(task => {
         if (task.id === id) {
@@ -111,7 +119,7 @@ export const useTasks = () => {
       
       return updatedTasks;
     });
-  }, []);
+  }, [trackActivity]);
 
   // Delete task
   const deleteTask = useCallback((id) => {
@@ -151,6 +159,9 @@ export const useTasks = () => {
       throw new Error('Subtask title is required');
     }
 
+    // Track activity for adding subtask (Option 2: Moderate)
+    trackActivity('add_subtask');
+
     setTasks(prevTasks => {
       return prevTasks.map(task => {
         if (task.id === taskId) {
@@ -173,7 +184,7 @@ export const useTasks = () => {
         return task;
       });
     });
-  }, []);
+  }, [trackActivity]);
 
   // Toggle subtask completion with auto-sync task completion
   const toggleSubtaskCompletion = useCallback((taskId, subtaskId) => {
