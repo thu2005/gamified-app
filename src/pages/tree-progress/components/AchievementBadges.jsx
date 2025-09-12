@@ -6,10 +6,11 @@ const AchievementBadges = ({ achievements }) => {
     'first-task': { icon: 'Zap', color: 'var(--color-warning)', bg: 'bg-yellow-50' },
     'streak-7': { icon: 'Flame', color: 'var(--color-error)', bg: 'bg-red-50' },
     'streak-30': { icon: 'Fire', color: 'var(--color-destructive)', bg: 'bg-red-100' },
-    'tree-mature': { icon: 'TreePine', color: 'var(--color-success)', bg: 'bg-green-50' },
-    'perfectionist': { icon: 'Target', color: 'var(--color-primary)', bg: 'bg-green-50' },
+    'tree-sapling': { icon: 'Trees', color: 'var(--color-success)', bg: 'bg-green-50' },
+    'tree-ancient': { icon: 'TreePine', color: 'var(--color-success)', bg: 'bg-green-100' },
+    'perfectionist': { icon: 'Target', color: 'var(--color-primary)', bg: 'bg-blue-50' },
     'early-bird': { icon: 'Sun', color: 'var(--color-warning)', bg: 'bg-yellow-50' },
-    'night-owl': { icon: 'Moon', color: 'var(--color-secondary)', bg: 'bg-blue-50' },
+    'night-owl': { icon: 'Moon', color: 'var(--color-secondary)', bg: 'bg-purple-50' },
     'task-master': { icon: 'Crown', color: 'var(--color-warning)', bg: 'bg-yellow-100' }
   };
 
@@ -43,8 +44,11 @@ const AchievementBadges = ({ achievements }) => {
                     <h5 className="text-xs font-medium text-foreground mt-2 leading-tight">
                       {achievement?.title}
                     </h5>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(achievement.unlockedAt)?.toLocaleDateString()}
+                    <p className="text-xs text-muted-foreground mt-1 leading-tight">
+                      {achievement?.description}
+                    </p>
+                    <p className="text-xs text-success font-medium mt-1">
+                      Unlocked {new Date(achievement.unlockedAt)?.toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -71,8 +75,11 @@ const AchievementBadges = ({ achievements }) => {
                     <h5 className="text-xs font-medium text-muted-foreground mt-2 leading-tight">
                       {achievement?.title}
                     </h5>
+                    <p className="text-xs text-muted-foreground mt-1 leading-tight">
+                      {achievement?.description}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {achievement?.progress}/{achievement?.target}
+                      Progress: {achievement?.progress}/{achievement?.target}
                     </p>
                   </div>
                 </div>

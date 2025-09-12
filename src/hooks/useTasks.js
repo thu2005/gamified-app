@@ -54,7 +54,14 @@ export const useTasks = () => {
       if (storedTasks) {
         const parsedTasks = JSON.parse(storedTasks);
         // Ensure all tasks have proper structure and calculated progress
-        const normalizedTasks = parsedTasks.map(task => normalizeTaskData(task));
+        const normalizedTasks = parsedTasks.map(task => {
+          const normalized = normalizeTaskData(task);
+          // Fix for existing completed tasks without completedAt
+          if (normalized.completed && !normalized.completedAt) {
+            normalized.completedAt = normalized.updatedAt || new Date().toISOString();
+          }
+          return normalized;
+        });
         setTasks(normalizedTasks);
       }
     } catch (error) {
@@ -132,6 +139,7 @@ export const useTasks = () => {
       return prevTasks.map(task => {
         if (task.id === id) {
           const newCompleted = !task.completed;
+          const now = new Date().toISOString();
           
           // When marking task as completed, mark all subtasks as completed
           // When marking task as incomplete, mark all subtasks as incomplete
@@ -145,7 +153,8 @@ export const useTasks = () => {
             completed: newCompleted,
             subtasks: updatedSubtasks,
             progress: newCompleted ? 100 : calculateProgress(updatedSubtasks),
-            updatedAt: new Date().toISOString()
+            updatedAt: now,
+            completedAt: newCompleted ? now : null // Add completedAt timestamp!
           };
         }
         return task;

@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 import Header from '../../components/ui/Header';
 import MobileBottomNav from '../../components/ui/MobileBottomNav';
 import useTreeProgress from '../../hooks/useTreeProgress';
+import useAchievements from '../../hooks/useAchievements';
 import { useTasks } from '../../hooks/useTasks';
 import TreeVisualization from './components/TreeVisualization';
 import ProgressStats from './components/ProgressStats';
@@ -21,12 +22,16 @@ const TreeProgressPage = () => {
     treeHealth,
     isDead,
     revivalTasksCount,
-    missedDeadlines
+    missedDeadlines,
+    wateringHistory
   } = useTreeProgress();
 
   // Get tasks data to calculate completed tasks
   const { tasks } = useTasks();
   const tasksCompleted = tasks.filter(task => task.completed).length;
+
+  // Get achievements data - pass tasks to avoid circular dependency
+  const { achievements } = useAchievements(tasks);
 
     console.log('Tree Progress Data:', {
     waterDrops,
@@ -49,77 +54,6 @@ const TreeProgressPage = () => {
     bestStreak: bestStreak,
     daysActive: daysActive
   };
-
-  // Mock data for achievements
-  const achievements = [
-    {
-      id: 'first-task',
-      title: 'First Steps',
-      description: 'Complete your first task',
-      unlocked: true,
-      unlockedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-      progress: 1,
-      target: 1
-    },
-    {
-      id: 'streak-7',
-      title: 'Week Warrior',
-      description: 'Maintain a 7-day streak',
-      unlocked: true,
-      unlockedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-      progress: 7,
-      target: 7
-    },
-    {
-      id: 'tree-mature',
-      title: 'Tree Guardian',
-      description: 'Grow your tree to mature stage',
-      unlocked: true,
-      unlockedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
-      progress: 1,
-      target: 1
-    },
-    {
-      id: 'perfectionist',
-      title: 'Perfectionist',
-      description: 'Complete 100% of daily tasks for a week',
-      unlocked: false,
-      progress: 5,
-      target: 7
-    },
-    {
-      id: 'streak-30',
-      title: 'Month Master',
-      description: 'Maintain a 30-day streak',
-      unlocked: false,
-      progress: 8,
-      target: 30
-    },
-    {
-      id: 'early-bird',
-      title: 'Early Bird',
-      description: 'Complete 50 tasks before 9 AM',
-      unlocked: false,
-      progress: 23,
-      target: 50
-    },
-    {
-      id: 'night-owl',
-      title: 'Night Owl',
-      description: 'Complete 25 tasks after 10 PM',
-      unlocked: false,
-      progress: 12,
-      target: 25
-    },
-    {
-      id: 'task-master',
-      title: 'Task Master',
-      description: 'Complete 500 total tasks',
-      unlocked: false,
-      progress: 142,
-      target: 500
-    }
-  ];
 
   return (
     <>
@@ -158,7 +92,7 @@ const TreeProgressPage = () => {
               {/* Side Panel */}
               <div className="space-y-6">
                 <GamificationRules />
-                <WateringHistory history={[]} />
+                <WateringHistory history={wateringHistory} />
               </div>
             </div>
 

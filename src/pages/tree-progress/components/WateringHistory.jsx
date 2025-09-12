@@ -11,22 +11,45 @@ const WateringHistory = ({ history }) => {
     })?.format(new Date(date));
   };
 
-  const getWateringIcon = (type) => {
-    switch (type) {
-      case 'watering': return 'Droplets';
-      case 'growth': return 'TrendingUp';
-      case 'milestone': return 'Award';
-      default: return 'Circle';
+  // Fun messages for watering events
+  const getWateringMessage = (event) => {
+    const baseMessages = [
+      "You're such a dedicated gardener! 🌱",
+      "Your tree is thriving thanks to your care! 🌿",
+      "Another step closer to a mighty tree! 🌳",
+      "Your consistency is paying off beautifully! ✨",
+      "Look at you, nurturing growth like a pro! 🌟",
+      "Your tree feels the love and care! 💚",
+      "You're building something amazing, drop by drop! 💧"
+    ];
+
+    const streakMessages = [
+      "Streak bonus unlocked! You're on fire! 🔥",
+      "Your dedication streak is paying off big time! ⚡",
+      "Consistency champion! Bonus health earned! 🏆",
+      "Your streak game is strong! Extra growth! 💪",
+      "Streak power activated! Your tree loves it! ⭐",
+      "Bonus health from your amazing streak! 🚀"
+    ];
+
+    // Use event ID to generate consistent random index (no more changing messages!)
+    const baseIndex = event.id % baseMessages.length;
+    const baseMessage = baseMessages[baseIndex];
+    
+    if (event.streakBonus > 0) {
+      const streakIndex = event.id % streakMessages.length;
+      const streakMessage = streakMessages[streakIndex];
+      return `${baseMessage} ${streakMessage}`;
     }
+    
+    return baseMessage;
   };
 
-  const getWateringColor = (type) => {
-    switch (type) {
-      case 'watering': return 'var(--color-primary)';
-      case 'growth': return 'var(--color-success)';
-      case 'milestone': return 'var(--color-warning)';
-      default: return 'var(--color-muted-foreground)';
+  const getHealthDescription = (event) => {
+    if (event.streakBonus > 0) {
+      return `+${event.baseHealth} base health + ${event.streakBonus} streak bonus (${event.currentStreak} day streak!)`;
     }
+    return `+${event.healthGained} health gained`;
   };
 
   return (
@@ -44,31 +67,29 @@ const WateringHistory = ({ history }) => {
           </div>
         ) : (
           history?.map((event, index) => (
-            <div key={index} className="flex items-start space-x-3 p-3 bg-surface rounded-lg">
+            <div key={event.id || index} className="flex items-start space-x-3 p-3 bg-surface rounded-lg">
               <div className="flex-shrink-0 mt-0.5">
                 <Icon 
-                  name={getWateringIcon(event?.type)} 
+                  name="Droplets" 
                   size={16} 
-                  color={getWateringColor(event?.type)} 
+                  color="var(--color-primary)" 
                 />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground">
-                  {event?.title}
+                  {getWateringMessage(event)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {event?.description}
+                  {getHealthDescription(event)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {formatDate(event?.timestamp)}
+                  {formatDate(event.date)}
                 </p>
               </div>
-              {event?.drops && (
-                <div className="flex items-center space-x-1 text-xs text-primary font-medium">
-                  <Icon name="Droplets" size={12} />
-                  <span>+{event?.drops}</span>
-                </div>
-              )}
+              <div className="flex items-center space-x-1 text-xs text-success font-medium">
+                <Icon name="Heart" size={12} />
+                <span>+{event.healthGained}</span>
+              </div>
             </div>
           ))
         )}
