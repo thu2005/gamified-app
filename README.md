@@ -148,7 +148,7 @@ npm run build
 
 ## 📱 Demo
 
-- https://gamified-app-psi.vercel.app/all-tasks
+- https://gamified-app-psi.vercel.app/
 
 ## 📈 Performance Metrics
 
