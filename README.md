@@ -146,19 +146,9 @@ npm run build
 - **Streak Protection**: Complete at least one task daily to maintain streaks
 - **Tree Care**: Monitor health levels and avoid missing deadlines
 
-## 📱 Screenshots
+## 📱 Demo
 
-### Dashboard Overview
-![Dashboard](./screenshots/dashboard.png) *Coming Soon*
-
-### Tree Progress Visualization  
-![Tree Progress](./screenshots/tree-progress.png) *Coming Soon*
-
-### Achievement System
-![Achievements](./screenshots/achievements.png) *Coming Soon*
-
-### Task Management
-![Tasks](./screenshots/tasks.png) *Coming Soon*
+- https://gamified-app-psi.vercel.app/all-tasks
 
 ## 📈 Performance Metrics
 
