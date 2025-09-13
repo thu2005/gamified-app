@@ -11,7 +11,6 @@ const QuickAddTask = () => {
   const handleQuickAdd = () => {
     if (taskTitle?.trim()) {
       // Here you would normally save the task
-      console.log('Quick task added:', taskTitle);
       setTaskTitle('');
       setIsExpanded(false);
       

@@ -167,7 +167,6 @@ const useTreeProgress = () => {
 
   // Update streak based on daily activity
   const updateStreak = useCallback(() => {
-    console.log('🌳 TREE: updateStreak called');
     const today = new Date();
     const lastActive = new Date(lastActiveDate);
     
@@ -176,57 +175,39 @@ const useTreeProgress = () => {
     const lastActiveDate_startOfDay = new Date(lastActive.getFullYear(), lastActive.getMonth(), lastActive.getDate());
     
     const daysDiff = Math.floor((todayDate - lastActiveDate_startOfDay) / (1000 * 60 * 60 * 24));
-    console.log('🌳 TREE: Date comparison', { 
-      today: today.toISOString(), 
-      lastActive: lastActive.toISOString(),
-      todayDate: todayDate.toISOString(),
-      lastActiveDate_startOfDay: lastActiveDate_startOfDay.toISOString(),
-      daysDiff 
-    });
     
     if (daysDiff === 0) {
       // Same day - no change
-      console.log('🌳 TREE: Same day, no streak/daysActive change');
       return;
     }
     
-    console.log('🌳 TREE: New day detected, updating daysActive and streak');
-    
     // This is a new active day, increment daysActive
     setDaysActive(prev => {
-      console.log('🌳 TREE: daysActive', prev, '→', prev + 1);
       return prev + 1;
     });
     
     if (daysDiff === 1) {
       // Consecutive day - increment streak
-      console.log('🌳 TREE: Consecutive day, incrementing streak');
       setStreak(prev => {
         const newStreak = prev + 1;
-        console.log('🌳 TREE: streak', prev, '→', newStreak);
         // Update best streak if current streak is higher
         setBestStreak(currentBest => {
           const newBest = Math.max(currentBest, newStreak);
-          console.log('🌳 TREE: bestStreak', currentBest, '→', newBest);
           return newBest;
         });
         return newStreak;
       });
     } else {
       // Streak broken - reset to 1 (but still count this as an active day)
-      console.log('🌳 TREE: Streak broken, resetting to 1');
       setStreak(1);
-      console.log('🌳 TREE: streak reset to 1');
       // Still update best streak in case this was the first time
       setBestStreak(currentBest => {
         const newBest = Math.max(currentBest, 1);
-        console.log('🌳 TREE: bestStreak', currentBest, '→', newBest);
         return newBest;
       });
     }
     
     setLastActiveDate(today);
-    console.log('🌳 TREE: lastActiveDate updated to', today.toISOString());
   }, [lastActiveDate]);
 
   // Track daily activity (Option 2: Moderate)
@@ -347,10 +328,7 @@ const useTreeProgress = () => {
 
   // Public API functions
   const completeTask = useCallback((taskId, hasSubtasks = false, subtaskCount = 0) => {
-    console.log('🌳 TREE: completeTask called', { taskId, hasSubtasks, subtaskCount, isDead, revivalTasksCount });
-    
     if (isDead && revivalTasksCount < REVIVAL_TASKS_REQUIRED) {
-      console.log('🌳 TREE: Tree is dead, counting revival task');
       const newCount = revivalTasksCount + 1;
       setRevivalTasksCount(newCount);
       
@@ -367,14 +345,11 @@ const useTreeProgress = () => {
       return;
     }
 
-    console.log('🌳 TREE: Tree alive, calling updateStreak and addWaterDrops');
     updateStreak();
     addWaterDrops(taskId, subtaskCount, hasSubtasks);
   }, [isDead, revivalTasksCount, updateStreak, addWaterDrops]);
 
   const uncompleteTask = useCallback((taskId, hasSubtasks = false, subtaskCount = 0) => {
-    console.log('🌳 TREE: uncompleteTask called', { taskId, hasSubtasks, subtaskCount, isDead, revivalTasksCount });
-    
     if (isDead) {
       // If tree is dead, reduce revival task count when uncompleting
       if (revivalTasksCount > 0) {
@@ -387,8 +362,6 @@ const useTreeProgress = () => {
   }, [isDead, revivalTasksCount, removeWaterDrops]);
 
   const completeSubtask = useCallback((taskId, subtaskId) => {
-    console.log('🌳 TREE: completeSubtask called', { taskId, subtaskId, isDead });
-    
     if (isDead) return;
     
     // Track activity for completing subtask
@@ -397,7 +370,6 @@ const useTreeProgress = () => {
   }, [isDead, trackDailyActivity, addWaterDrops]);
 
   const uncompleteSubtask = useCallback((taskId, subtaskId) => {
-    console.log('🌳 TREE: uncompleteSubtask called', { taskId, subtaskId, isDead, revivalTasksCount });
     
     if (isDead) {
       // Subtasks don't contribute to revival, so nothing to undo
@@ -456,8 +428,6 @@ const useTreeProgress = () => {
 
   // Public function to track productivity activity (Option 2: Moderate)
   const trackActivity = useCallback((activityType = 'general') => {
-    console.log('🌳 TREE: trackActivity called', { activityType, isDead });
-    
     // Always track activity even if tree is dead (for daysActive count)
     trackDailyActivity();
   }, [trackDailyActivity]);

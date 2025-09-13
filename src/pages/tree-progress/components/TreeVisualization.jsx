@@ -4,8 +4,6 @@ import Icon from '../../../components/AppIcon';
 const TreeVisualization = ({ treeHealth, waterDrops, treeStage, isWatering, showGrowthAnimation, isDead, revivalTasksCount }) => {
   const [animationClass, setAnimationClass] = useState('');
 
-  console.log('TreeVisualization props:', { treeHealth, waterDrops, treeStage, isWatering, showGrowthAnimation });
-
   useEffect(() => {
     if (showGrowthAnimation) {
       setAnimationClass('scale-105 transition-transform duration-1000');

@@ -33,17 +33,6 @@ const TreeProgressPage = () => {
   // Get achievements data - pass tasks to avoid circular dependency
   const { achievements } = useAchievements(tasks);
 
-    console.log('Tree Progress Data:', {
-    waterDrops,
-    streak,
-    bestStreak,
-    daysActive,
-    treeStage,
-    treeHealth,
-    isDead,
-    revivalTasksCount
-  });
-
   const [isWatering, setIsWatering] = useState(false);
   const [showGrowthAnimation, setShowGrowthAnimation] = useState(false);
 

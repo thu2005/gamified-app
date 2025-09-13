@@ -1,6 +1,6 @@
 # 🌳 TreeTask - Gamified Productivity App
 
-A sophisticated task management application with gamification elements, built for the NAVER Vietnam AI Hackathon. Features a unique tree growth system that visualizes productivity progress through engaging game mechanics.
+A sophisticated task management application with gamification elements, built for AI Hackathon. Features a unique tree growth system that visualizes productivity progress through engaging game mechanics.
 
 ## 🚀 Live Demo
 [Demo Link] - *Coming Soon*

@@ -49,8 +49,6 @@ const AllTasks = () => {
     const task = allTasks.find(t => t.id === taskId);
     if (!task) return;
 
-    console.log('Task toggle:', { taskId, task, completed: task.completed });
-
     // Determine new completion state (opposite of current)
     const newCompleted = !task.completed;
 
@@ -60,19 +58,9 @@ const AllTasks = () => {
     // Update tree progress based on new state
     if (newCompleted) {
       // Task is being completed
-      console.log('🎯 ALL-TASKS: Completing task for tree progress', { 
-        taskId, 
-        hasSubtasks: task.subtasks?.length > 0, 
-        subtaskCount: task.subtasks?.length || 0 
-      });
       treeCompleteTask(taskId, task.subtasks?.length > 0, task.subtasks?.length || 0);
     } else {
       // Task is being uncompleted
-      console.log('🎯 ALL-TASKS: Uncompleting task for tree progress', {
-        taskId, 
-        hasSubtasks: task.subtasks?.length > 0, 
-        subtaskCount: task.subtasks?.length || 0 
-      });
       treeUncompleteTask(taskId, task.subtasks?.length > 0, task.subtasks?.length || 0);
     }
   };
@@ -99,7 +87,6 @@ const AllTasks = () => {
 
     // Only process if there are new overdue tasks
     if (overdueTaskIds.length > 0) {
-      console.log('Processing overdue tasks:', overdueTaskIds);
       overdueTaskIds.forEach(taskId => {
         treeMissDeadline(taskId);
       });
@@ -256,8 +243,6 @@ const AllTasks = () => {
     const subtask = task?.subtasks?.find(s => s.id === subtaskId);
     if (!task || !subtask) return;
 
-    console.log('Subtask toggle:', { taskId, subtaskId, subtask, completed: subtask.completed });
-
     // Determine new completion state (opposite of current)
     const newCompleted = !subtask.completed;
 
@@ -267,11 +252,9 @@ const AllTasks = () => {
     // Update tree progress based on new state
     if (newCompleted) {
       // Subtask is being completed
-      console.log('Completing subtask for tree progress', { taskId, subtaskId });
       treeCompleteSubtask(taskId, subtaskId);
     } else {
       // Subtask is being uncompleted
-      console.log('Uncompleting subtask for tree progress', { taskId, subtaskId });
       treeUncompleteSubtask(taskId, subtaskId);
     }
   };
